@@ -6,6 +6,7 @@ import iam = require('@aws-cdk/aws-iam');
 import { Asset } from '@aws-cdk/aws-s3-assets';
 import autoscaling = require('@aws-cdk/aws-autoscaling');
 import { SubnetType, VpnConnection } from '@aws-cdk/aws-ec2';
+import { BlockDeviceVolume } from '@aws-cdk/aws-autoscaling';
 
 export class CdkUsingVpcDefault extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
@@ -48,7 +49,7 @@ export class CdkUsingVpcDefault extends cdk.Stack {
     // Subnet
     const vpcSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC})
     
-    console.log (vpcSubnets)
+    //console.log (vpcSubnets)
 
     // Copy our zipped app to s3
     const asset = new Asset(this, 'appAssetToS3', {
@@ -71,6 +72,10 @@ export class CdkUsingVpcDefault extends cdk.Stack {
       open: true,
     });
 
+    
+    //EBS
+
+
     // Auto scaling and ec2 spot instances in private subnet
     var appAutoscalingGroup = new autoscaling.AutoScalingGroup(this, 'ASG', {
       vpc,
@@ -87,6 +92,22 @@ export class CdkUsingVpcDefault extends cdk.Stack {
       updateType: autoscaling.UpdateType.REPLACING_UPDATE,
       healthCheck: autoscaling.HealthCheck.ec2(),
       keyName: "aws-ssh-key-pair", // ssh key-pair name which was made separately
+      blockDevices: [
+        {
+          deviceName: '/dev/sda1',
+          volume: BlockDeviceVolume.ebs(10, {
+            encrypted: true,
+            deleteOnTermination: true,
+          }),
+        },
+        //{
+        //  deviceName: '/dev/sda2',
+        //  volume: BlockDeviceVolume.ebs(20, {
+        //    encrypted: true,
+        //    deleteOnTermination: true
+        //  })
+        //}
+      ],
     });
 
     // Scale instances with cpu

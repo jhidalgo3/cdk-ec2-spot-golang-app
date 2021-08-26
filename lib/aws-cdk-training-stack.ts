@@ -48,7 +48,7 @@ export class AwsCdkTrainingStack extends cdk.Stack {
     // Subnet
     const vpcSubnets = vpc.selectSubnets({subnetType: ec2.SubnetType.PUBLIC})
     
-    console.log (vpcSubnets)
+    //console.log (vpcSubnets)
 
     // Copy our zipped app to s3
     const asset = new Asset(this, 'appAssetToS3', {
